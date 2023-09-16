@@ -18,7 +18,7 @@ func Empty[T any]() Optional[T] {
 // panic if value is nil.
 func Of[T any](val T) Optional[T] {
 	return Optional[T]{
-		val: RequiredNonNull(val),
+		val: RequireNonNull(val),
 	}
 }
 
