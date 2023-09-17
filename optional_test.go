@@ -61,7 +61,7 @@ func TestOptional_String(t *testing.T) {
 	}
 }
 
-func TestMust(t *testing.T) {
+func TestOptional_MustVal(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
 		assert.Panics(t, func() {
 			Empty[int]().MustVal()
@@ -70,4 +70,81 @@ func TestMust(t *testing.T) {
 	t.Run("not nil", func(t *testing.T) {
 		assert.Equal(t, Of(1).MustVal(), 1)
 	})
+}
+
+func TestOptional_IsEmpty(t *testing.T) {
+	type isEmptyable interface {
+		IsEmpty() bool
+	}
+	type testCase struct {
+		name string
+		args isEmptyable
+		want bool
+	}
+
+	tests := []testCase{
+		{
+			name: "nil empty",
+			args: OfNullable[any](nil),
+			want: true,
+		},
+		{
+			name: "not empty",
+			args: Of(1),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.args.IsEmpty(); got != tt.want {
+				t.Errorf("IsEmpty() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestOptional_OrElse(t *testing.T) {
+	type args[T any] struct {
+		o Optional[T]
+		d T
+	}
+	type testCase[T any] struct {
+		name string
+		args args[T]
+		want T
+	}
+
+	tests := []testCase[any]{
+		{
+			name: "int else",
+			args: args[any]{
+				o: Of[any](2),
+				d: 1,
+			},
+			want: 2,
+		},
+		{
+			name: "zero else",
+			args: args[any]{
+				o: Of[any](0),
+				d: 1,
+			},
+			want: 0,
+		},
+		{
+			name: "nil else",
+			args: args[any]{
+				o: Empty[any](),
+				d: 1,
+			},
+			want: 1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.args.o.OrElse(tt.args.d); got != tt.want {
+				t.Errorf("OrElse(%v) = %v, want %v", tt.args.d, got, tt.want)
+			}
+		})
+	}
 }
