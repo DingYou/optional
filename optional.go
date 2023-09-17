@@ -90,7 +90,7 @@ func (o Optional[T]) Filter(f func(T) bool) Optional[T] {
 
 func (o Optional[T]) String() string {
 	if o.IsPresent() {
-		return fmt.Sprintf("Optional[%s]{%+v}", reflect.TypeOf(o.Val()), o.Val())
+		return fmt.Sprintf("Optional[%s]{%v}", reflect.TypeOf(o.Val()), o.Val())
 	}
-	return fmt.Sprintf("Optional[%s]{nil}", reflect.TypeOf(o.Val()))
+	return fmt.Sprintf("EmptyOptional[%s]{%v}", reflect.TypeOf(o.Val()), o.Val())
 }

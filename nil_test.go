@@ -167,8 +167,12 @@ func TestIsNilWithFloat(t *testing.T) {
 }
 
 func TestRequiredNonNull(t *testing.T) {
-	assert.Panics(t, func() {
-		RequireNonNull[any](nil)
+	t.Run("test nil", func(t *testing.T) {
+		assert.Panics(t, func() {
+			RequireNonNull[any](nil)
+		})
 	})
-	assert.Equal(t, RequireNonNull[int](1), 1)
+	t.Run("test not nil", func(t *testing.T) {
+		assert.Equal(t, RequireNonNull[int](1), 1)
+	})
 }
