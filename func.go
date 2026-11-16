@@ -13,9 +13,9 @@ func Map[T, E any](o Optional[T], f func(T) E) Optional[E] {
 
 // FlatMap If a value is present, returns the result of applying the given Optional-bearing mapping function to the value, otherwise returns an empty Optional.
 // This method is similar to Map(Function), but the mapping function is one whose result is already an Optional, and if invoked, flatMap does not wrap it within an additional Optional.
-func FlatMap[T, E any](o Optional[T], f func(Optional[T]) E) Optional[E] {
+func FlatMap[T, E any](o Optional[T], f func(T) Optional[E]) Optional[E] {
 	if o.IsPresent() {
-		return OfNullable(f(o))
+		return f(o.Val())
 	}
 	return Empty[E]()
 }

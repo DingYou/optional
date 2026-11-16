@@ -5,32 +5,53 @@ import (
 	"reflect"
 )
 
+// Optional holds a value that may be absent. Its zero value is empty.
 type Optional[T any] struct {
-	val   T
-	isNil bool
+	val     T
+	present bool
 }
 
 func Empty[T any]() Optional[T] {
-	return Optional[T]{isNil: true}
+	return Optional[T]{}
 }
 
 // Of Returns an Optional describing the given non-null value.
 // panic if value is nil.
 func Of[T any](val T) Optional[T] {
 	return Optional[T]{
-		val: RequireNonNull(val),
+		val:     RequireNonNull(val),
+		present: true,
 	}
 }
 
 // OfNullable Returns an Optional describing the given value, if non-null, otherwise returns an empty Optional.
 func OfNullable[T any](val T) Optional[T] {
 	return Optional[T]{
-		val:   val,
-		isNil: IsNil(val),
+		val:     val,
+		present: !IsNil(val),
 	}
 }
 
-// Val returns the value
+// FromOK returns a present Optional when ok is true, even if val is nil.
+// When ok is false, it returns an empty Optional and discards val.
+func FromOK[T any](val T, ok bool) Optional[T] {
+	if !ok {
+		return Empty[T]()
+	}
+	return Optional[T]{val: val, present: true}
+}
+
+// Get returns the value and true when present, or T's zero value and false when empty.
+func (o Optional[T]) Get() (T, bool) {
+	if !o.present {
+		var zero T
+		return zero, false
+	}
+	return o.val, true
+}
+
+// Val returns the stored value, even when empty. Unlike Get, it does not normalize
+// an empty OfNullable's typed nil to T's zero value.
 func (o Optional[T]) Val() T {
 	return o.val
 }
@@ -45,12 +66,12 @@ func (o Optional[T]) MustVal() T {
 
 // IsPresent If a value is present, returns true, otherwise false.
 func (o Optional[T]) IsPresent() bool {
-	return !o.isNil
+	return o.present
 }
 
 // IsEmpty If a value is not present, returns true, otherwise false.
 func (o Optional[T]) IsEmpty() bool {
-	return o.isNil
+	return !o.present
 }
 
 // OrElse If a value is present, returns the value, otherwise returns defaultVal.
